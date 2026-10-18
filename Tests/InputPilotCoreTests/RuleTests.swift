@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import InputPilotCore
 import XCTest
@@ -216,6 +217,26 @@ private final class TestInputSourceAccess: InputSourceAccess {
 }
 
 final class AppModelTests: XCTestCase {
+    @MainActor
+    func testReopenBeforeSettingsHaveEverAppearedShowsAWindow() throws {
+        let app = NSApplication.shared
+        let input = TestInputSourceAccess()
+        input.available = [input.english, input.chinese]
+        let (model, _) = try makeModel(input)
+        let delegate = PilotAppDelegate(model: model)
+        XCTAssertFalse(delegate.applicationShouldHandleReopen(app, hasVisibleWindows: false))
+        let settings = app.windows.filter { $0.title == "自动切换输入法设置" && $0.isVisible }
+        XCTAssertEqual(settings.count, 1)
+        let window = try XCTUnwrap(settings.first)
+        defer { window.close() }
+        window.close()
+        XCTAssertFalse(delegate.applicationShouldHandleReopen(app, hasVisibleWindows: false))
+        XCTAssertTrue(window.isVisible)
+        delegate.showSettings()
+        XCTAssertEqual(app.windows.filter { $0.title == window.title && $0.isVisible }.count, 1)
+        XCTAssertTrue(input.selected.isEmpty)
+    }
+
     @MainActor
     func testDefaultSelectionPersistsWithoutSwitchingAndRejectsUnavailableSource() throws {
         let input = TestInputSourceAccess()

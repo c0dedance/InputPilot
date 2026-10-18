@@ -7,7 +7,7 @@ if [[ $# -gt 1 ]] || [[ $# -eq 1 && "$1" != "--build-only" && "$1" != "--dmg" ]]
 fi
 
 INPUTPILOT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-INPUTPILOT_APP="$INPUTPILOT_ROOT/dist/自动切换输入法.app"
+INPUTPILOT_APP="$INPUTPILOT_ROOT/dist/InputPilot.app"
 
 if /usr/bin/pgrep -x InputPilot >/dev/null; then
     printf '%s\n' '自动切换输入法仍在运行。请先点击其菜单栏 → 退出，然后重试。' >&2
@@ -38,6 +38,8 @@ fi
 /bin/cp "$INPUTPILOT_ROOT/Resources/MenuBarIcon.pdf" "$INPUTPILOT_APP/Contents/Resources/MenuBarIcon.pdf"
 /bin/cp "$INPUTPILOT_BIN/InputPilot" "$INPUTPILOT_APP/Contents/MacOS/InputPilot"
 /bin/cp "$INPUTPILOT_ROOT/Resources/Info.plist" "$INPUTPILOT_APP/Contents/Info.plist"
+/bin/mkdir -p "$INPUTPILOT_APP/Contents/Resources/zh-Hans.lproj"
+/bin/cp "$INPUTPILOT_ROOT/Resources/zh-Hans.lproj/InfoPlist.strings" "$INPUTPILOT_APP/Contents/Resources/zh-Hans.lproj/InfoPlist.strings"
 /usr/bin/plutil -lint "$INPUTPILOT_APP/Contents/Info.plist"
 /usr/bin/codesign --force --sign - "$INPUTPILOT_APP"
 /usr/bin/codesign --verify --strict --verbose=2 "$INPUTPILOT_APP"
@@ -46,7 +48,7 @@ printf '构建和本地签名校验通过：%s\n' "$INPUTPILOT_APP"
 if [[ $# -eq 1 && "$1" == "--dmg" ]]; then
     INPUTPILOT_STAGE="$(/usr/bin/mktemp -d -t inputpilot-dmg)"
     trap '/bin/rm -rf -- "$INPUTPILOT_STAGE"' EXIT
-    /usr/bin/ditto "$INPUTPILOT_APP" "$INPUTPILOT_STAGE/自动切换输入法.app"
+    /usr/bin/ditto "$INPUTPILOT_APP" "$INPUTPILOT_STAGE/InputPilot.app"
     /bin/ln -s /Applications "$INPUTPILOT_STAGE/Applications"
     INPUTPILOT_DMG="$INPUTPILOT_ROOT/dist/InputPilot.dmg"
     /usr/bin/hdiutil create -volname '自动切换输入法' -srcfolder "$INPUTPILOT_STAGE" -format UDZO -ov "$INPUTPILOT_DMG"

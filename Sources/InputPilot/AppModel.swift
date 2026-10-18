@@ -24,7 +24,7 @@ final class AppModel: ObservableObject {
 
     init() {
         guard let id = Bundle.main.bundleIdentifier else {
-            fatalError("请通过 scripts/run.sh 启动打包的自动切换输入法.app，而不是 swift run。")
+            fatalError("请通过 scripts/run.sh 启动打包的 InputPilot.app，而不是 swift run。")
         }
         ownBundleID = id
         input = InputSourceService()
